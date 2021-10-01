@@ -47,7 +47,7 @@ async function bootstrap() {
 }
 
   app.enableCors({
-      origin: ['localhost:3000', '*', '/\.decagonhq\.com$/']},
+      origin: ['http://localhost:3000', '*', '/\.localhost:3000.com$/']},
   );
   app.use(helmet());
   app.useGlobalPipes(new ValidationPipe());

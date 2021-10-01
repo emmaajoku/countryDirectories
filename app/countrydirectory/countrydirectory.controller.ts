@@ -1,16 +1,16 @@
-import { BadRequestException, Controller, Get, Query, Req, UseGuards, Logger } from '@nestjs/common';
+import { IsNotEmptyObject, ArrayNotEmpty } from 'class-validator';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { CountrylayerService } from 'app/lib/countrylayer/countrylayer.service';
 import { LoginService } from 'app/login/login.service';
-import { CountrydirectoryService } from './countrydirectory.service';
 import { JwtAuthGuard } from 'app/login/jwt-auth.guard';
-import { createParamDecorator } from '@nestjs/common';
+import { RedisCache } from 'app/lib/redis/redis-cache';
 
 @Controller('search')
 export class CountrydirectoryController {
   constructor(
-    private readonly countrydirectoryService: CountrydirectoryService,
     private readonly countrylayerService: CountrylayerService,
-    private readonly loginService: LoginService
+    private readonly loginService: LoginService,
+    private redisService: RedisCache
     )
    {}
 
@@ -19,7 +19,12 @@ export class CountrydirectoryController {
   @Get('/')
   async searchCountry(@Req() req: any, @Query() params: any): Promise<any> {
       await this.loginService.verify(req?.user?.id);
-      const responseData = await this.countrylayerService.makeapicall(params.name);
+      const paramsName: string = params.name;
+      const rcesponseDataInRedis = await this.redisService.get(paramsName);
+      if (rcesponseDataInRedis && IsNotEmptyObject(rcesponseDataInRedis) && ArrayNotEmpty(rcesponseDataInRedis)) {
+        return rcesponseDataInRedis;
+      }
+      const responseData = await this.countrylayerService.makeApiCall(paramsName);
       return responseData;
     } 
   

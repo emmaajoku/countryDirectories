@@ -1,6 +1,5 @@
 import { AccountRepository } from 'app/account/account.repository';
 import { AccountModule } from './../account/account.module';
-import { JwtStrategyModule } from './../lib/strategy/jwt-strategy.module';
 import { LoginModule } from '../login/login.module';
 import { CountrylayerModule } from './../lib/countrylayer/countrylayer.module';
 import { CountrylayerService } from './../lib/countrylayer/countrylayer.service';

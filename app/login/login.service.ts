@@ -1,18 +1,14 @@
 import { Account } from './../account/account.entity';
-import { SignupData } from './../lib/utils';
-import { Login } from '../login/login.entity';
 import { IsNotEmptyObject } from 'class-validator';
 import { RedisCache } from 'app/lib/redis/redis-cache';
 import { AccountService } from 'app/account/account.service';
-import { Injectable, BadRequestException, UnauthorizedException, Ip, HttpException, InternalServerErrorException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, InternalServerErrorException, HttpStatus, Logger } from '@nestjs/common';
 import { LoginRepository } from './login.repository';
-import { LoginDto } from './dto/login.dto';
 import { config } from 'app/config/config';
 import { JwtService } from '@nestjs/jwt';
 
-import { JwtStrategyService } from '../lib/strategy/jwt-strategy.service';
 import moment = require('moment');
-import { hashPassword, matchPasswordHash } from 'app/lib/password-hash';
+import { matchPasswordHash } from 'app/lib/password-hash';
 
 @Injectable()
 export class LoginService {
@@ -38,22 +34,23 @@ constructor(
             throw new BadRequestException('Token is not active');
         }
 
-        let userCounter: number = 0;
-        const userCounterDataInRedis = await this.redisService.get(`${tokenAttributes.token}userCounter`);
-        const tokenDataInRedis = await this.redisService.get(tokenAttributes.token);
-        await this.redisService.set(`${tokenAttributes.token}userCounter`, userCounter, 60);
-        await this.redisService.set(`${tokenAttributes.token}`, tokenAttributes.token, 60);
-
+        let clickCount: number;
+        let userCounterDataInRedis = await this.redisService.get(`${tokenAttributes.email}userCounter`);
+        const tokenDataInRedis = await this.redisService.get(tokenAttributes.email);
+        await this.redisService.set(`${tokenAttributes.email}`, tokenAttributes.token, 60);
 
         if (userCounterDataInRedis && tokenDataInRedis && IsNotEmptyObject(userCounterDataInRedis) && 
             IsNotEmptyObject(tokenDataInRedis) && userCounterDataInRedis > config.max_rate_limit_counter) {
             throw new BadRequestException('You are being rate limiting, please wait for a minute and try again');
         }
         
-        if (userCounterDataInRedis) {
-            userCounter = userCounterDataInRedis
+        if (userCounterDataInRedis === null) {
+            userCounterDataInRedis = 0;
         }
-        userCounter++;
+
+        clickCount = userCounterDataInRedis;
+        clickCount++;
+        await this.redisService.set(`${tokenAttributes.email}userCounter`, clickCount, 60);
 
         return true;
     }
@@ -67,7 +64,7 @@ constructor(
     async logout(id: string): Promise<boolean> {
        const userData = this.loginRepositoty.getLoginUserById(id);
         let tokenId: string;
-        
+
         try {
             await this.loginRepositoty.logout(tokenId, 0);
             return true;
@@ -102,9 +99,7 @@ constructor(
      * @param sub  - user ID that the token being issued to.
      */
     async createToken(email: string, password: string): Promise<object> {
-        
         const validateUser = await this.validateUser(email, password);
-
         const payload = { 
             username: validateUser.email, 
             sub: validateUser.id,
@@ -120,7 +115,6 @@ constructor(
 
         const privateKey = config.jwt.private_key;
 
-
         if (!privateKey) {
              Logger.error('Unable to find find issuer private key');
             throw new UnauthorizedException('No private key found for issuer - ' + config.jwt.issuer,);
@@ -129,10 +123,12 @@ constructor(
         try {
             const jwtToken = this.jwtService.sign(payload);
             await this.loginRepositoty.saveAuthenticationToken(validateUser.id, jwtToken);
+            const {password, ...account} = validateUser
             return {
                 status: 'success',
                 statusCode: HttpStatus.OK,
-                access_token: jwtToken
+                access_token: jwtToken,
+                user: account,
               };
 
         } catch (exception) {

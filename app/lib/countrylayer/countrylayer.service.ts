@@ -12,21 +12,23 @@ export class CountrylayerService {
         private readonly redisService: RedisCache
         ) {}
     
-     makeapicall = async (countryName: string) => {
+     makeApiCall = async (countryName: string) => {
         const searchQueryExist = await this.redisService.get(countryName);
 
         if (searchQueryExist && IsNotEmptyObject(searchQueryExist) && ArrayNotEmpty(searchQueryExist)) {
             return  searchQueryExist;
         }
-
         const fullUrl = `${config.countrylayer.baseurl}name/${countryName}?access_key=${config.countrylayer.api_key}&FullText=${true}` 
-        
-        const response = await this.httpService.get(fullUrl).pipe(
-            map(res => res.data),
+        const response = this.httpService.get(fullUrl).pipe(
+            map(async res => {
+              await this.redisService.set(countryName, res.data, 172800);
+              return res.data;
+            }),
         catchError(e => {
           throw new HttpException(e.response.data, e.response.status);
         }),
       );
+
       return response; 
     }
 }

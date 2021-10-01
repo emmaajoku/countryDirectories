@@ -1,6 +1,5 @@
-import { JwtModule } from '@nestjs/jwt';
 import { CountrylayerModule } from './lib/countrylayer/countrylayer.module';
-import { Module, CacheModule, OnApplicationBootstrap, HttpService, HttpModule } from '@nestjs/common';
+import { Module, CacheModule } from '@nestjs/common';
 import { AppController } from 'app/app.controller';
 import { AppService } from 'app/app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -25,6 +24,8 @@ import { CountrydirectoryModule } from './countrydirectory/countrydirectory.modu
         host: config.redis.host,
         port: config.redis.port,
         database: config.redis.db,
+        ttl: 172800,
+        max: 300000,
       },
     ),
     CountrydirectoryModule,

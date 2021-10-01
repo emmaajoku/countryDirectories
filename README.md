@@ -1,7 +1,7 @@
-# Usagetracker Service API
+# CountrDirectory Service API
 
 ## Running the application
-This application depends on a couple of services to run fully. The command below would build and start all dependent containers and take you into the bash temrinal of the main (`country-directory`) container:
+This application depends on a couple of container to run fully. The command below would build and start all dependent containers and take you into the bash temrinal of the main (`country-directory`) container:
 
 $ ./bin/start_docker.sh
 
@@ -12,10 +12,22 @@ $ yarn install
 ```
 
 ## Starting this application
-you will need to change the server listening part of the application to use:
+you will need to change the server listening port of the application from anthing that 8000 is that is in use:
 ```
-app.listen(8000, '0.0.0.0')
+app.listen(8000, '0.0.0.0') is located in the server.ts
+
 ```
+# Accessing the url
+```bash
+$ docker ps 
+```
+IMAGE                       PORT
+country-directory_web_app   80/tcp, 0.0.0.0:56296->5858/tcp, 0.0.0.0:56295->8000/tcp
+
+as you can see above the url to access the app is: `0.0.0.0:56295` but this port `56295` will change on each docker build. 
+```
+
+
 For local development, the database details has to be passed into the .env file.
 
 ```
@@ -24,9 +36,6 @@ DATABASE_HOST=
 DATABASE_PASSWORD=
 DATABASE_NAME=
 ```
-For local development, the database details has to be passed into the kubernetes/master.yaml file.
-
-The application is assuming google cloud is the host and there is config file called `country-directory-service-config-ngtd`
 
 to turn off the automatic migration in production, you will need to change the synchronization setting to true in the ormconfig.js file.
 ```
@@ -55,6 +64,9 @@ $ yarn run start:dev
 # production mode
 $ yarn run start:prod
 ```
+```
+accessing the 
+```
 ## Technology used
 [Fastify] (https://www.fastify.io/docs/)
 
@@ -79,21 +91,8 @@ $ yarn run test:e2e
 $ yarn run test:cov
 ```
 
-
-# # endpoints path:
-``` 
-/accounts -> Body
-    {
-    "email": "ajoku8@gmail.com",
-    "company_name": "testing"
-    }
-
-/tracker -> Body
-    {
-        "email": "ajoku8@gmail.com"
-    }
-
-/payment -> query 
-    /payment?email=ajoku8@gmail.com
+```
+# The swagger docs can be found 
+http://0.0.0.0:****/api, Please change star with you current docker generated port number for image `country-directory_web_app` 
 
 ```

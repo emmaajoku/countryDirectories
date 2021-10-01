@@ -1,0 +1,14 @@
+{
+    "apps": [
+      {
+        "name": "country-directory",
+        "script": "dist/server.js",
+        "min_uptime": 36000,
+        "max_restarts": 50,
+        "vizion": false,
+        "exec_mode": "cluster",
+        "instances":  0
+      }
+    ]
+  }
+  

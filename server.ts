@@ -1,14 +1,3 @@
-if (process.env.NEW_RELIC_APP_NAME !== undefined &&
-  process.env.NEW_RELIC_LICENSE_KEY !== undefined) {
-  try {
-    // tslint:disable-next-line: no-var-requires
-    require('newrelic');
-  } catch (e) {
-    // tslint:disable-next-line: no-console
-    console.log(e);
-  }
-}
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'app/app.module';
 import * as helmet from 'helmet';

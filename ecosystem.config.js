@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    name: 'UsageTrackerService',
+    name: 'Countrydirectory',
     script: 'yarn start:prod',
 
     // Options reference: https://pm2.keymetrics.io/docs/usage/application-declaration/

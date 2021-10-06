@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import { hash, compare} from 'bcrypt';
 import * as crypto from 'crypto';
 
 
@@ -8,8 +8,8 @@ import * as crypto from 'crypto';
  */
 export const hashPassword = async ( password : string ): Promise<string> => {
     const saltRounds : number = 10;
-    const hash = await bcrypt.hash(password, saltRounds);
-    return hash;
+    const hashValue = await hash(password, saltRounds);
+    return hashValue;
 }
 
 /**
@@ -19,6 +19,6 @@ export const hashPassword = async ( password : string ): Promise<string> => {
  * @returns 
  */
 export const matchPasswordHash = async ( password : string, hash : string ) => {
-    const match = await bcrypt.compare(password, hash);
+    const match = await compare(password, hash);
     return match;
 }

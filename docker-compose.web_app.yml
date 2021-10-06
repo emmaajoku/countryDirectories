@@ -22,6 +22,7 @@ services:
       volumes:
           - .:/src
           - ./docker_logs/country-directory:/var/log/applications/country-directory
+          - /src/node_modules
 
       networks:
           - main_network
